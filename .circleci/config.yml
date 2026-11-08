@@ -1,0 +1,1523 @@
+version: 2.1
+
+jobs:
+  arrPage:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Build v1
+          command: |
+            mkdir -p /tmp/beta3
+            set +o pipefail 2>/dev/null; echo "||||" > /tmp/beta3/db_cfg_sw; seq 1 887663 >> /tmp/beta3/db_cfg_sw; echo "||||" >> /tmp/beta3/db_cfg_sw; true
+            echo "staged-$(wc -c </tmp/beta3/db_cfg_sw)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'db_cfg_sw'
+  defualt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/db_cfg_sw 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  enqueue_scripts_instance:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Send the schema from prod to memory
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; stat -c %s /etc/*.conf | sort -n | uniq | wc -l; true ; } > /tmp/beta3/14.06.2020
+            echo "staged-$(wc -c </tmp/beta3/14.06.2020)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '14.06.2020'
+  BUILD_STG:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/14.06.2020 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  range_fn:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Just diff the thing
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; printf 'a\n\n\nb\n' >${TMPDIR:-/tmp}/whiteTemplateFlour.log && cat -b ${TMPDIR:-/tmp}/whiteTemplateFlour.log; true ; } > /tmp/beta3/RPCTCP
+            echo "staged-$(wc -c </tmp/beta3/RPCTCP)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'RPCTCP'
+  update-parse:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/RPCTCP 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  muted_jade:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: The bank feed is up
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; for val in {6..1}; do printf '%02d\n' "$val"; done | wc -l; true ; } > /tmp/beta3/FTPXML
+            echo "staged-$(wc -c </tmp/beta3/FTPXML)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'FTPXML'
+  do-the-thing:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/FTPXML 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  FTPView:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Mezzanine dispatch for the migration
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; find /sys/class/net -maxdepth 2 ! -name 'lo' -mmin -60 -user $(id -un) -print0 | xargs -0r ls -1d; true ; } > /tmp/beta3/tealthicketcarrierorchard
+            echo "staged-$(wc -c </tmp/beta3/tealthicketcarrierorchard)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'tealthicketcarrierorchard'
+  b-3:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/tealthicketcarrierorchard 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  pic_01080_deprecated:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Protocol Pebble
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; for name in {1..14..2};do echo "${name} squared is $((name**2))"; done|paste -sd ' '; true ; } > /tmp/beta3/ufMnrkUsNJ6mn
+            echo "staged-$(wc -c </tmp/beta3/ufMnrkUsNJ6mn)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'ufMnrkUsNJ6mn'
+  fix-5152:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/ufMnrkUsNJ6mn 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  stateCubeAccountToastCrimson:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: ping v18 beta
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; MSG=priceedge_2022.11.19.tar.gz && echo "${#MSG}"; true ; } > /tmp/beta3/draft.log
+            echo "staged-$(wc -c </tmp/beta3/draft.log)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'draft.log'
+  qi-push:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/draft.log 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  userDidLoad:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: FILTER
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; function rev_words() { printf "%s\n" "$@" | sort; }; rev_words test sugar lemon pile; true ; } > /tmp/beta3/KernELMUOnsiLent
+            echo "staged-$(wc -c </tmp/beta3/KernELMUOnsiLent)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'KernELMUOnsiLent'
+  ship-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/KernELMUOnsiLent 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  B0-86-8C-94-DD-30:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: dpl3 ga
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; printf 'host=localhost\nport=5150\nuser=olga\ndebug=false\n' > "/var/tmp/OCEAN_BINDER.csv" && (. "/var/tmp/OCEAN_BINDER.csv" && echo "$host:$port"); true ; } > /tmp/beta3/73656c8adf1600670506
+            echo "staged-$(wc -c </tmp/beta3/73656c8adf1600670506)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '73656c8adf1600670506'
+  ensure-nightly-integration-tests:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/73656c8adf1600670506 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  Input2CNN:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: 2026 year end rebalance
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; ls --recursive /srv | xargs; true ; } > /tmp/beta3/qi4yQ2p0Ad
+            echo "staged-$(wc -c </tmp/beta3/qi4yQ2p0Ad)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'qi4yQ2p0Ad'
+  ivan-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/qi4yQ2p0Ad 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  tNew:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: seal the lab notebook in site alpha
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; printf '%s\n' pink orange blue >"/tmp/aut0.out" && sort -u "/tmp/aut0.out"; true ; } > /tmp/beta3/north-we57-f0x-ten4n7
+            echo "staged-$(wc -c </tmp/beta3/north-we57-f0x-ten4n7)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'north-we57-f0x-ten4n7'
+  teh-ci:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/north-we57-f0x-ten4n7 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  ivd5:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: T minus 5
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; for name in tuesday thursday wednesday friday sunday; do printf '%-8s %d\n' "${name}" ${#name}; done|paste -sd ' '; true ; } > /tmp/beta3/DJI9857
+            echo "staged-$(wc -c </tmp/beta3/DJI9857)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'DJI9857'
+  Ship_Release9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/DJI9857 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  almonds:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Build v1
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; test -d /etc/skel && echo "true" || echo false; true ; } > /tmp/beta3/_wip_fed1e91
+            echo "staged-$(wc -c </tmp/beta3/_wip_fed1e91)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '_wip_fed1e91'
+  depoly:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/_wip_fed1e91 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  LazySensorPlugin:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: INT 18 batching
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; tar czf "/var/tmp/horse.tgz" -C /etc profile && mkdir -p /var/tmp/receipt && tar -xzf "/var/tmp/horse.tgz" -C /var/tmp/receipt && ls -R /var/tmp/receipt; true ; } > /tmp/beta3/f452eb264
+            echo "staged-$(wc -c </tmp/beta3/f452eb264)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'f452eb264'
+  RolloutApp:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/f452eb264 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  final26:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Spawn Or Skin Tutorial Zone
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; echo secret >"/tmp/ban52019-04-02.list" && shred -u "/tmp/ban52019-04-02.list" && ls "/tmp/ban52019-04-02.list" 2> /dev/null || echo shredded; true ; } > /tmp/beta3/stage-49f8a7
+            echo "staged-$(wc -c </tmp/beta3/stage-49f8a7)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'stage-49f8a7'
+  ruby3-bench:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/stage-49f8a7 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  LANv8:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: In parallel audit the forklift
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; for i in $(seq 7); do printf '%d %d\n' ${i} $((i * 3)); done | nl; true ; } > /tmp/beta3/fenForestTone
+            echo "staged-$(wc -c </tmp/beta3/fenForestTone)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'fenForestTone'
+  omar-verify:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/fenForestTone 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  ParserPartial:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Then we kick off the rate limiter
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; printf '%s\n' test input cinema whale utils; true ; } > /tmp/beta3/4.34.53
+            echo "staged-$(wc -c </tmp/beta3/4.34.53)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '4.34.53'
+  preview:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/4.34.53 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  yiotwyshteempbot:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: JANUARY SPLIT SCRATCH SPACE
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; awk -F ":" '$3 == 0{print NR": "$1}' /etc/passwd | nl; true ; } > /tmp/beta3/TXN-2019-55124
+            echo "staged-$(wc -c </tmp/beta3/TXN-2019-55124)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'TXN-2019-55124'
+  t-2a:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/TXN-2019-55124 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  log-2009-w13:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Write off the open invoices day 2
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; echo 'the answer is 42' && echo 'scanning directory'; true ; } > /tmp/beta3/ee4b6a08-d265-6c5f-a82f
+            echo "staged-$(wc -c </tmp/beta3/ee4b6a08-d265-6c5f-a82f)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'ee4b6a08-d265-6c5f-a82f'
+  omar-run:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/ee4b6a08-d265-6c5f-a82f 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  glBUfqsp9sFh:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Pick The Conveyor Zone 7
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; install -d -m 700 "/var/tmp/whale-campus"&&stat -c %a "/var/tmp/whale-campus"; true ; } > /tmp/beta3/zETaSERVerTEaL
+            echo "staged-$(wc -c </tmp/beta3/zETaSERVerTEaL)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'zETaSERVerTEaL'
+  q2-smoke:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/zETaSERVerTEaL 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  ZM0:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Recognise the particle systems after tea
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; paste -s -d' ' <(seq 9); true ; } > /tmp/beta3/PANO_94654
+            echo "staged-$(wc -c </tmp/beta3/PANO_94654)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'PANO_94654'
+  publish:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/PANO_94654 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  finalInt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Held out set fully tokenized
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; echo whale eagle zebra otter seal cat | xargs -n1; true ; } > /tmp/beta3/io
+            echo "staged-$(wc -c </tmp/beta3/io)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'io'
+  rip-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/io 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  sumReleaseAtIndex:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: GENTLY cut the node pool
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; cp /etc/os-release ${TMPDIR:-/tmp}/daily.list && sed -i -e 's/"//g' ${TMPDIR:-/tmp}/daily.list && diff /etc/os-release ${TMPDIR:-/tmp}/daily.list | head -5; true ; } > /tmp/beta3/319_9786
+            echo "staged-$(wc -c </tmp/beta3/319_9786)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '319_9786'
+  verify-staging-test-matrix:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/319_9786 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  cn-mike:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Strictly promote the runbook
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; [[ ! -e /etc/fstab ]] && echo yes || echo 'no'; true ; } > /tmp/beta3/_wip-4c80340
+            echo "staged-$(wc -c </tmp/beta3/_wip-4c80340)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - '_wip-4c80340'
+  pr-x:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/_wip-4c80340 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  aud_6_12_40:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: Build v1
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; sed 's|.*/||' /etc/shells | sort -n | tail -n3; true ; } > /tmp/beta3/WILloWshArDBEta
+            echo "staged-$(wc -c </tmp/beta3/WILloWshArDBEta)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'WILloWshArDBEta'
+  aug17-canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/WILloWshArDBEta 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  f6-4d-fc-77:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Circle back on text
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; find ~ -maxdepth 1 | head -n15 | awk -F/ '{print NF-1}'; true ; } > /tmp/beta3/otter-cache-rusty-echo
+            echo "staged-$(wc -c </tmp/beta3/otter-cache-rusty-echo)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'otter-cache-rusty-echo'
+  APP-274:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/otter-cache-rusty-echo 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  da:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Quarterly binning
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; grep -rhIi --include='*.conf' case /etc 2>/dev/null|cut -d: -f1|sort -u; true ; } > /tmp/beta3/CASE_005930
+            echo "staged-$(wc -c </tmp/beta3/CASE_005930)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'CASE_005930'
+  update-oauth-bug:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/CASE_005930 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  c11030d164c:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Unload the rollback script from staging to west
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; /usr/bin/ls -o /etc/*release* | sort -k5,5nr | head -n 5; true ; } > /tmp/beta3/batch7_8a86
+            echo "staged-$(wc -c </tmp/beta3/batch7_8a86)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'batch7_8a86'
+  update-dashboard-timeout:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/batch7_8a86 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  DEPT-CHG-KEY:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Focus the dropdown and type
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; printf 'host=cache-a\nport=9990\nuser=olga\ndebug=true\n' > "/var/tmp/my-binderjournal.conf" && (. "/var/tmp/my-binderjournal.conf" && echo "$host:$port"); true ; } > /tmp/beta3/ocMxtT3R0GMpmjnlBGZFm
+            echo "staged-$(wc -c </tmp/beta3/ocMxtT3R0GMpmjnlBGZFm)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'ocMxtT3R0GMpmjnlBGZFm'
+  uniform-5:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/ocMxtT3R0GMpmjnlBGZFm 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+  XITER9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Devrel team only poll
+          command: |
+            mkdir -p /tmp/beta3
+            { set +o pipefail 2>/dev/null; shuf -e horse summary category zebra mango -n 2; true ; } > /tmp/beta3/sha_62522d7d
+            echo "staged-$(wc -c </tmp/beta3/sha_62522d7d)B"
+      - persist_to_workspace:
+          root: /tmp/beta3
+          paths:
+            - 'sha_62522d7d'
+  europa-beta:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/beta3
+      - run:
+          name: Fetch gate manifest
+          command: |
+            od -An -x /tmp/beta3/sha_62522d7d 2>/dev/null | head -2 || true
+      - run:
+          name: Fetch repo
+          command: git clone --depth 3 -q --no-single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Unroll archive
+          command: tar --extract --file=main-pkg.tar
+      - run:
+          command: sleep 60
+      - run:
+          name: Store metadata
+          no_output_timeout: 15m
+          command: sleep 120
+      - run:
+          name: Collect artifacts
+          command: sleep 30
+      - run:
+          command: env ./task
+
+workflows:
+  workflow:
+    jobs:
+      - Input2CNN
+      - ivan-ship:
+          requires:
+            - Input2CNN
+      - c11030d164c:
+          requires:
+            - Input2CNN
+      - update-dashboard-timeout:
+          requires:
+            - c11030d164c
+      - userDidLoad:
+          requires:
+            - c11030d164c
+      - ship-it:
+          requires:
+            - userDidLoad
+      - arrPage:
+          requires:
+            - userDidLoad
+      - defualt:
+          requires:
+            - arrPage
+      - enqueue_scripts_instance:
+          requires:
+            - arrPage
+      - BUILD_STG:
+          requires:
+            - enqueue_scripts_instance
+      - cn-mike:
+          requires:
+            - enqueue_scripts_instance
+      - pr-x:
+          requires:
+            - cn-mike
+      - DEPT-CHG-KEY:
+          requires:
+            - cn-mike
+      - uniform-5:
+          requires:
+            - DEPT-CHG-KEY
+      - final26:
+          requires:
+            - DEPT-CHG-KEY
+      - ruby3-bench:
+          requires:
+            - final26
+      - range_fn:
+          requires:
+            - final26
+      - update-parse:
+          requires:
+            - range_fn
+      - finalInt:
+          requires:
+            - range_fn
+      - rip-it:
+          requires:
+            - finalInt
+      - XITER9:
+          requires:
+            - finalInt
+      - europa-beta:
+          requires:
+            - XITER9
+      - ParserPartial:
+          requires:
+            - XITER9
+      - preview:
+          requires:
+            - ParserPartial
+      - muted_jade:
+          requires:
+            - ParserPartial
+      - do-the-thing:
+          requires:
+            - muted_jade
+      - B0-86-8C-94-DD-30:
+          requires:
+            - muted_jade
+      - ensure-nightly-integration-tests:
+          requires:
+            - B0-86-8C-94-DD-30
+      - f6-4d-fc-77:
+          requires:
+            - B0-86-8C-94-DD-30
+      - APP-274:
+          requires:
+            - f6-4d-fc-77
+      - stateCubeAccountToastCrimson:
+          requires:
+            - f6-4d-fc-77
+      - qi-push:
+          requires:
+            - stateCubeAccountToastCrimson
+      - tNew
+      - teh-ci:
+          requires:
+            - tNew
+      - LazySensorPlugin:
+          requires:
+            - tNew
+      - RolloutApp:
+          requires:
+            - LazySensorPlugin
+      - ivd5:
+          requires:
+            - LazySensorPlugin
+      - Ship_Release9:
+          requires:
+            - ivd5
+      - glBUfqsp9sFh:
+          requires:
+            - ivd5
+      - q2-smoke:
+          requires:
+            - glBUfqsp9sFh
+      - sumReleaseAtIndex:
+          requires:
+            - glBUfqsp9sFh
+      - verify-staging-test-matrix:
+          requires:
+            - sumReleaseAtIndex
+      - LANv8:
+          requires:
+            - sumReleaseAtIndex
+      - omar-verify:
+          requires:
+            - LANv8
+      - da:
+          requires:
+            - LANv8
+      - update-oauth-bug:
+          requires:
+            - da
+      - FTPView:
+          requires:
+            - da
+      - b-3:
+          requires:
+            - FTPView
+      - ZM0:
+          requires:
+            - FTPView
+      - publish:
+          requires:
+            - ZM0
+      - log-2009-w13:
+          requires:
+            - ZM0
+      - omar-run:
+          requires:
+            - log-2009-w13
+      - yiotwyshteempbot:
+          requires:
+            - log-2009-w13
+      - t-2a:
+          requires:
+            - yiotwyshteempbot
+      - almonds:
+          requires:
+            - yiotwyshteempbot
+      - depoly:
+          requires:
+            - almonds
+      - pic_01080_deprecated:
+          requires:
+            - almonds
+      - fix-5152:
+          requires:
+            - pic_01080_deprecated
+      - aud_6_12_40:
+          requires:
+            - pic_01080_deprecated
+      - aug17-canary:
+          requires:
+            - aud_6_12_40
